@@ -28,6 +28,10 @@
 .idea/**/uiDesigner.xml
 .idea/**/dbnavigator.xml
 
+
+# home-specific or machine-specific files
+.idea/modules/
+
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
