@@ -31,6 +31,7 @@ object IOIntroduction {
   // mapN - combine IO effects as tuples
   import cats.syntax.apply._
   val combinedMeaningOfLife: IO[Int] = (ourFirstIO, improvedMeaningOfLife).mapN(_ + _)
+  val combinedPrintedMeaningOfLife: IO[Unit] = combinedMeaningOfLife.flatMap(i => IO(println(i)))
   def smallProgram_v2(): IO[Unit] =
     (IO(StdIn.readLine()), IO(StdIn.readLine())).mapN(_ + _).map(println)
 
@@ -115,5 +116,7 @@ object IOIntroduction {
     import cats.effect.unsafe.implicits.global // "platform"
     // "end of the world"
     (1 to 100).foreach(i => println(fibonacci(i).unsafeRunSync()))
+    combinedPrintedMeaningOfLife.unsafeRunSync()
+    smallProgram_v2().unsafeRunSync()
   }
 }
