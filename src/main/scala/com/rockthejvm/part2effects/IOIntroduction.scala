@@ -2,6 +2,7 @@ package com.rockthejvm.part2effects
 
 import cats.effect.IO
 
+import scala.annotation.tailrec
 import scala.io.StdIn
 
 object IOIntroduction {
@@ -29,8 +30,11 @@ object IOIntroduction {
   } yield ()
 
   // mapN - combine IO effects as tuples
+
   import cats.syntax.apply._
+
   val combinedMeaningOfLife: IO[Int] = (ourFirstIO, improvedMeaningOfLife).mapN(_ + _)
+
   def smallProgram_v2(): IO[Unit] =
     (IO(StdIn.readLine()), IO(StdIn.readLine())).mapN(_ + _).map(println)
 
@@ -54,6 +58,13 @@ object IOIntroduction {
   // hint: use flatMap
   def sequenceTakeFirst[A, B](ioa: IO[A], iob: IO[B]): IO[A] =
     ioa.flatMap(a => iob.map(_ => a))
+
+  def sequenceTakeFirstFor[A, B](ioa: IO[A], iob: IO[B]): IO[A] = {
+    for {
+      a <- ioa
+      _ <- iob
+    } yield a
+  }
 
   def sequenceTakeFirst_v2[A, B](ioa: IO[A], iob: IO[B]): IO[A] =
     ioa <* iob
@@ -111,9 +122,19 @@ object IOIntroduction {
       prev <- IO.defer(fibonacci(n - 2))
     } yield last + prev
 
+  def fibonacciFast(n: Int): IO[BigInt] =
+    def fibonacciInner(n: Int, current: BigInt, prev: BigInt): IO[BigInt] =
+      if (n < 2) IO(current)
+      else
+        IO.defer(fibonacciInner(n - 1, current + prev, current))
+
+    fibonacciInner(n, 1, 1)
+
+
   def main(args: Array[String]): Unit = {
     import cats.effect.unsafe.implicits.global // "platform"
     // "end of the world"
-    (1 to 100).foreach(i => println(fibonacci(i).unsafeRunSync()))
+    //(1 to 100).foreach(i => println(fibonacci(i).unsafeRunSync()))
+    (1 to 100).foreach(i => println(fibonacciFast(i).unsafeRunSync()))
   }
 }

@@ -46,6 +46,14 @@ object IOParallelism extends IOApp.Simple {
   val twoFailuresDelayed: IO[String] = (IO(Thread.sleep(1000)) >> aFailure.debug, anotherFailure.debug).parMapN(_ + _)
 
 
-  override def run: IO[Unit] =
-    twoFailuresDelayed.debug.void
+  override def run: IO[Unit] = {
+//    composedIO.debug.void
+//    goalInLife.debug.void
+//    goalInLife_v2.debug.void
+//    goalInLife_v3.debug.void
+//    parallelWithFailure.debug.void
+//    twoFailuresDelayed.debug.void
+    twoFailures.debug.void
+  }
+
 }
