@@ -75,5 +75,6 @@ object IOTraversal extends IOApp.Simple {
   val parallelSingleIO_v3: IO[List[Int]] = ios.parSequence // extension method from the Parallel syntax package
 
   override def run =
+    //singleIO.debug.void
     parallelSingleIO_v3.map(_.sum).debug.void
 }

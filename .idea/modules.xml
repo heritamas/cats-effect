@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cats-effect.iml" filepath="$PROJECT_DIR$/.idea/modules/cats-effect.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/cats-effect/cats-effect.cats-effect-build.iml" filepath="$PROJECT_DIR$/.idea/modules/cats-effect/cats-effect.cats-effect-build.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cats-effect/github.cats-effect.iml" filepath="$PROJECT_DIR$/.idea/modules/cats-effect/github.cats-effect.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cats-effect/github.cats-effect.cats-effect-build.iml" filepath="$PROJECT_DIR$/.idea/modules/cats-effect/github.cats-effect.cats-effect-build.iml" />
     </modules>
   </component>
 </project>
