@@ -53,15 +53,15 @@ object Resources extends IOApp.Simple {
     IO(new Scanner(new FileReader(new File(path))))
 
   def readLineByLine(scanner: Scanner): IO[Unit] =
-    if (scanner.hasNextLine) IO(scanner.nextLine()).debug >> IO.sleep(100.millis) >> readLineByLine(scanner)
+    if (scanner.hasNextLine) IO(scanner.nextLine()).debug *> IO.sleep(100.millis) >> readLineByLine(scanner)
     else IO.unit
 
   def bracketReadFile(path: String): IO[Unit] =
-    IO(s"opening file at $path") >>
+    IO(s"opening file at $path") *>
       openFileScanner(path).bracket { scanner =>
         readLineByLine(scanner)
       } { scanner =>
-        IO(s"closing file at $path").debug >> IO(scanner.close())
+        IO(s"closing file at $path").debug *> IO(scanner.close())
       }
 
   /**
@@ -81,6 +81,7 @@ object Resources extends IOApp.Simple {
   // ... at a later part of your code
 
   val resourceFetchUrl = for {
+    _ <- IO("main thread").debug
     fib <- connectionResource.use(conn => conn.open() >> IO.never).start
     _ <- IO.sleep(1.second) >> fib.cancel
   } yield ()
@@ -97,7 +98,7 @@ object Resources extends IOApp.Simple {
    *  Exercise: read a text file with one line every 100 millis, using Resource
    *  (refactor the bracket exercise to use Resource)
    */
-  def getResourceFromFile(path: String) = Resource.make(openFileScanner(path)) { scanner =>
+  def getResourceFromFile(path: String): Resource[IO, Scanner] = Resource.make(openFileScanner(path)) { scanner =>
     IO(s"closing file at $path").debug >> IO(scanner.close())
   }
 
@@ -123,7 +124,7 @@ object Resources extends IOApp.Simple {
     conn <- Resource.make(IO(new Connection(scanner.nextLine())))(conn => conn.close().void)
   } yield conn
 
-  val openConnection = connFromConfResourceClean("cats-effect/src/main/resources/connection.txt").use(conn => conn.open() >> IO.never)
+  val openConnection = connFromConfResourceClean("src/main/resources/connection.txt").use(conn => conn.open() >> IO.never)
   val canceledConnection = for {
     fib <- openConnection.start
     _ <- IO.sleep(1.second) >> IO("cancelling!").debug >> fib.cancel
@@ -132,13 +133,14 @@ object Resources extends IOApp.Simple {
   // connection + file will close automatically
 
   // finalizers to regular IOs
-  val ioWithFinalizer = IO("some resource").debug.guarantee(IO("freeing resource").debug.void)
-  val ioWithFinalizer_v2 = IO("some resource").debug.guaranteeCase {
+  val ioWithFinalizer: IO[String] = IO("some resource").debug.guarantee(IO("freeing resource").debug.void)
+  val ioWithFinalizer_v2: IO[String] = IO("some resource").debug.guaranteeCase {
     case Succeeded(fa) => fa.flatMap(result => IO(s"releasing resource: $result").debug).void
     case Errored(e) => IO("nothing to release").debug.void
     case Canceled() => IO("resource got canceled, releasing what's left").debug.void
   }
 
 
-  override def run = ioWithFinalizer.void
+  //override def run: IO[Unit] = cancelReadFile("src/main/scala/com/rockthejvm/part3concurrency/Resources.scala").void
+  override def run: IO[Unit] = ioWithFinalizer_v2.void
 }

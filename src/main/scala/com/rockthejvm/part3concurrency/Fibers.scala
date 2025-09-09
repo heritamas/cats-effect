@@ -64,6 +64,14 @@ object Fibers extends IOApp.Simple {
     } yield result
   }
 
+  def testDataShare(): IO[(String, String)] = {
+    for {
+      shared <- IO.pure("shared").debug
+      r1 <- (IO(s"task 1 started").debug >> IO.sleep(1.second) >> IO(s"task 1: $shared").debug)
+      r2 <- (IO(s"task 2 started").debug >> IO.sleep(1.second) >> IO(s"task 2: $shared").debug)
+    } yield (r1, r2)
+  }
+
 
   /**
    * Exercises:
@@ -99,7 +107,7 @@ object Fibers extends IOApp.Simple {
     }
   }
 
-  def testEx1() = {
+  def testEx1(): IO[Unit] = {
     val aComputation = IO("starting").debug >> IO.sleep(1.second) >> IO("done!").debug >> IO(42)
     processResultsFromFiber(aComputation).void
   }
@@ -124,7 +132,7 @@ object Fibers extends IOApp.Simple {
     }
   }
 
-  def testEx2() = {
+  def testEx2(): IO[Unit] = {
     val firstIO = IO.sleep(2.seconds) >> IO(1).debug
     val secondIO = IO.sleep(3.seconds) >> IO(2).debug
     tupleIOs(firstIO, secondIO).debug.void
@@ -145,10 +153,10 @@ object Fibers extends IOApp.Simple {
     }
   }
 
-  def testEx3() = {
+  def testEx3(): IO[Unit] = {
     val aComputation = IO("starting").debug >> IO.sleep(1.second) >> IO("done!").debug >> IO(42)
     timeout(aComputation, 500.millis).debug.void
   }
 
-  override def run = testEx3()
+  override def run: IO[Unit] = testEx3().debug.void
 }
