@@ -107,5 +107,6 @@ object RacingIOs extends IOApp.Simple {
       }
     }
 
-  override def run = testRace().debug.void
+  //override def run = timeout(IO.sleep(2.seconds) >> IO(42).debug, 1.seconds).void
+  override def run = timeout(IO.sleep(2.seconds) >> IO(42).debug, 1.seconds).void
 }

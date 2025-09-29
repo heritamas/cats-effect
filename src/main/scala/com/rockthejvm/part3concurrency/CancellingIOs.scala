@@ -18,7 +18,7 @@ object CancellingIOs extends IOApp.Simple {
   // uncancelable
   // example: online store, payment processor
   // payment process must NOT be canceled
-  val specialPaymentSystem = (
+  val specialPaymentSystem: IO[String] = (
     IO("Payment running, don't cancel me...").debug >>
     IO.sleep(1.second) >>
     IO("Payment completed.").debug
@@ -62,6 +62,15 @@ object CancellingIOs extends IOApp.Simple {
     } yield ()
   }
 
+  val authFlowUnCancellable: IO[Unit] = IO.uncancelable { poll =>
+    for {
+      pw <- inputPassword.onCancel(IO("Authentication timed out. Try again later.").debug.void) // this is cancelable
+      verified <- verifyPassword(pw) // this is NOT cancelable
+      _ <- if (verified) IO("Authentication successful.").debug // this is NOT cancelable
+      else IO("Authentication failed.").debug
+    } yield ()
+  }
+
   val authProgram = for {
     authFib <- authFlow.start
     _ <- IO.sleep(3.seconds) >> IO("Authentication timeout, attempting cancel...").debug >> authFib.cancel
@@ -81,7 +90,7 @@ object CancellingIOs extends IOApp.Simple {
    */
   // 1
   val cancelBeforeMol = IO.canceled >> IO(42).debug
-  val uncancelableMol = IO.uncancelable(_ => IO.canceled >> IO(42).debug)
+  val uncancelableMol = IO.uncancelable(poll => IO.canceled >> IO(42).debug)
   // uncancelable will eliminate ALL cancel points
 
   // 2
@@ -113,5 +122,7 @@ object CancellingIOs extends IOApp.Simple {
    */
 
 
-  override def run = threeStepProgram()
+  //override def run = chainOfIOs.void
+  //override def run = invincibleAuthProgram
+  override def run: IO[Unit] = threeStepProgram()
 }
